@@ -1,0 +1,29 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model Submission {
+  id                  Int       @id @default(autoincrement())
+  createdAt           DateTime  @default(now())
+  username            String
+  shortVideoUrl       String
+  analyticsVideoPath  String
+  currentViews        Int       @default(0)
+  reviewed            Boolean   @default(false)
+  reviewedAt          DateTime?
+  reviewedByEmail     String?
+}
