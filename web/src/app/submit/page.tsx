@@ -23,13 +23,13 @@ export default function SubmitPage() {
       fd.append('file', file);
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: fd });
       if (!uploadRes.ok) throw new Error('Upload failed');
-      const { path } = await uploadRes.json();
+      const { url } = await uploadRes.json();
 
       // 2) create submission
       const createRes = await fetch('/api/submissions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, shortVideoUrl, analyticsVideoPath: path, currentViews }),
+        body: JSON.stringify({ username, shortVideoUrl, analyticsVideoPath: url, currentViews }),
       });
       if (!createRes.ok) throw new Error('Create failed');
       setMessage('Submitted successfully');
@@ -37,8 +37,9 @@ export default function SubmitPage() {
       setShortVideoUrl('');
       setCurrentViews(0);
       setFile(null);
-    } catch (err: any) {
-      setMessage(err.message || 'Something went wrong');
+    } catch (err: unknown) {
+      if (err instanceof Error) setMessage(err.message);
+      else setMessage('Something went wrong');
     } finally {
       setSaving(false);
     }
