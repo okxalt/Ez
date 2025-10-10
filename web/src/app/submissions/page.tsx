@@ -6,6 +6,7 @@ export default async function SubmissionsPage() {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-semibold">Submissions</h2>
+      <p className="text-white/60">Side-by-side playback of reel and analytics. Only visible after login.</p>
       <div className="grid md:grid-cols-2 gap-6">
         {submissions.map((s) => (
           <div key={s.id} className="rounded-2xl p-4 border border-white/10 bg-white/5 backdrop-blur space-y-3">

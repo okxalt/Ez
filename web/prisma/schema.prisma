@@ -13,8 +13,13 @@ datasource db {
 
 model Admin {
   id        Int      @id @default(autoincrement())
-  email     String   @unique
+  email     String
   createdAt DateTime @default(now())
+
+  whopId Int
+  whop   Whop    @relation(fields: [whopId], references: [id])
+
+  @@unique([whopId, email])
 }
 
 model Submission {
@@ -27,4 +32,17 @@ model Submission {
   reviewed            Boolean   @default(false)
   reviewedAt          DateTime?
   reviewedByEmail     String?
+
+  whopId Int
+  whop   Whop   @relation(fields: [whopId], references: [id])
+}
+
+model Whop {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+  slug      String    @unique
+  name      String
+
+  admins      Admin[]
+  submissions Submission[]
 }

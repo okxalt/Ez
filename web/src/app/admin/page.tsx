@@ -9,8 +9,9 @@ import type { Submission, Admin } from '@prisma/client';
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function AdminPage() {
-  const { data: submissions, mutate } = useSWR<Submission[]>('/api/submissions', fetcher);
-  const { data: admins, mutate: mutateAdmins } = useSWR<Admin[]>('/api/admins', fetcher);
+  const [whopSlug, setWhopSlug] = useState('default');
+  const { data: submissions, mutate } = useSWR<Submission[]>(`/api/submissions?whop=${encodeURIComponent(whopSlug)}`, fetcher);
+  const { data: admins, mutate: mutateAdmins } = useSWR<Admin[]>(`/api/admins?whop=${encodeURIComponent(whopSlug)}`, fetcher);
   const [email, setEmail] = useState('');
   const [secret, setSecret] = useState('');
   const [minViews, setMinViews] = useState<number>(() => Number(process.env.NEXT_PUBLIC_MIN_VIEWS || 1000));
@@ -18,18 +19,18 @@ export default function AdminPage() {
   const pending = useMemo(() => (submissions || []).filter((s: Submission) => s.currentViews >= minViews), [submissions, minViews]);
 
   async function login() {
-    await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, secret }) });
+    await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, secret, whopSlug }) });
     mutateAdmins();
   }
   async function logout() { await fetch('/api/auth/logout', { method: 'POST' }); mutateAdmins(); }
 
   async function addAdmin() {
-    await fetch('/api/admins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email }) });
+    await fetch('/api/admins', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, whopSlug }) });
     setEmail('');
     mutateAdmins();
   }
   async function removeAdmin(targetEmail: string) {
-    await fetch(`/api/admins?email=${encodeURIComponent(targetEmail)}`, { method: 'DELETE' });
+    await fetch(`/api/admins?email=${encodeURIComponent(targetEmail)}&whop=${encodeURIComponent(whopSlug)}`, { method: 'DELETE' });
     mutateAdmins();
   }
   async function markReviewed(id: number, reviewed: boolean) {
@@ -44,6 +45,10 @@ export default function AdminPage() {
       <div className="rounded-2xl p-4 border border-white/10 bg-white/5 backdrop-blur space-y-3">
         <h3 className="font-semibold">Login</h3>
         <div className="flex gap-2 items-end flex-wrap">
+          <div>
+            <label className="block text-sm text-white/70">Whop</label>
+            <input value={whopSlug} onChange={(e) => setWhopSlug(e.target.value)} className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 outline-none" />
+          </div>
           <div>
             <label className="block text-sm text-white/70">Email</label>
             <input value={email} onChange={(e) => setEmail(e.target.value)} className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 outline-none" />
