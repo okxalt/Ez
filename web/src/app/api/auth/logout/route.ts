@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
 
 export async function POST() {
-  const session = await getSession();
-  session.destroy();
+  // With NextAuth JWT strategy, client-side signOut should be used.
   return NextResponse.json({ ok: true });
 }

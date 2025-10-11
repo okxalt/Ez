@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
-import { put } from '@vercel/blob';
+import { getSupabaseServerClient, getPublicUrl } from '@/lib/supabase';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -8,6 +8,17 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: NextRequest) {
   try {
     const contentType = req.headers.get('content-type') || '';
+    const supabase = getSupabaseServerClient();
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET_NAME || 'analytics';
+
+    // Ensure bucket exists (best-effort)
+    try {
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const exists = (buckets || []).some((b) => b.name === bucket);
+      if (!exists) {
+        await supabase.storage.createBucket(bucket, { public: true });
+      }
+    } catch {}
 
     // Support both multipart/form-data and raw video binary upload
     if (contentType.includes('multipart/form-data')) {
@@ -16,13 +27,15 @@ export async function POST(req: NextRequest) {
       if (!file || typeof file === 'string') {
         return NextResponse.json({ error: 'No file provided' }, { status: 400 });
       }
-      const ext = ((file as File).name.split('.').pop() || 'mp4').toLowerCase();
-      const key = `analytics/${randomUUID()}.${ext}`;
-      const blob = await put(key, await (file as File).arrayBuffer(), {
-        access: 'public',
-        token: process.env.BLOB_READ_WRITE_TOKEN,
-      });
-      return NextResponse.json({ url: blob.url }, { status: 201 });
+      const inputFile = file as File;
+      const ext = (inputFile.name.split('.').pop() || 'mp4').toLowerCase();
+      const path = `${randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from(bucket)
+        .upload(path, await inputFile.arrayBuffer(), { contentType: inputFile.type || 'video/mp4', upsert: false });
+      if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 });
+      const url = getPublicUrl(bucket, path);
+      return NextResponse.json({ url }, { status: 201 });
     }
 
     // Raw body fallback
@@ -30,9 +43,13 @@ export async function POST(req: NextRequest) {
     if (!arrayBuffer || (arrayBuffer as ArrayBuffer).byteLength === 0) {
       return NextResponse.json({ error: 'Empty body' }, { status: 400 });
     }
-    const key = `analytics/${randomUUID()}.mp4`;
-    const blob = await put(key, arrayBuffer, { access: 'public', token: process.env.BLOB_READ_WRITE_TOKEN });
-    return NextResponse.json({ url: blob.url }, { status: 201 });
+    const path = `${randomUUID()}.mp4`;
+    const { error: rawError } = await supabase.storage
+      .from(bucket)
+      .upload(path, arrayBuffer, { contentType: 'video/mp4', upsert: false });
+    if (rawError) return NextResponse.json({ error: rawError.message }, { status: 500 });
+    const url = getPublicUrl(bucket, path);
+    return NextResponse.json({ url }, { status: 201 });
   } catch (error) {
     console.error('POST /api/upload error', error);
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 });

@@ -1,10 +1,12 @@
 import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 async function requireAdmin() {
-  const session = await getSession();
-  if (!session.user) {
+  const session = await getServerSession(authOptions);
+  // For now, anyone logged in is treated as admin to manage list
+  if (!session?.user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   return null as never;
