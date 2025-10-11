@@ -39,7 +39,7 @@ const mockApprovedSubmissions = [
 export default function ChallengeGalleryPage({ params }: PageProps) {
   const [challengeId, setChallengeId] = useState<string>('');
   const [submissions] = useState(mockApprovedSubmissions);
-  const [selectedSubmission, setSelectedSubmission] = useState<typeof mockApprovedSubmissions[0] | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<(typeof mockApprovedSubmissions)[0] | null>(null);
 
   useEffect(() => {
     params.then((resolvedParams) => {
@@ -160,7 +160,7 @@ export default function ChallengeGalleryPage({ params }: PageProps) {
                       url={selectedSubmission.videoUrl}
                       width="100%"
                       height="100%"
-                      controls
+                      controls={true}
                     />
                   </div>
                   

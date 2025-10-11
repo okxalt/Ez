@@ -8,7 +8,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Eye, CheckCircle, XCircle, Clock, Upload } from 'lucide-react';
-import ReactPlayer from 'react-player';
+import dynamic from 'next/dynamic';
+
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
 // Mock data - in real app, this would be fetched from API
 const mockSubmissions = [
@@ -80,7 +82,7 @@ const statusConfig = {
 
 export default function SubmissionsPage() {
   const [submissions] = useState(mockSubmissions);
-  const [selectedSubmission, setSelectedSubmission] = useState<typeof mockSubmissions[0] | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<(typeof mockSubmissions)[0] | null>(null);
   const [isReviewing, setIsReviewing] = useState(false);
 
   const handleApprove = async () => {
@@ -256,7 +258,7 @@ export default function SubmissionsPage() {
                               by @{submission.memberUsername} • {submission.challengeTitle}
                             </p>
                             <p className="text-white/60 text-xs">
-                              Approved on {formatDate(submission.approvedAt)}
+                              Approved on {submission.approvedAt ? formatDate(submission.approvedAt) : 'Unknown'}
                             </p>
                           </div>
                           <Button
@@ -342,7 +344,7 @@ export default function SubmissionsPage() {
                           url={selectedSubmission.videoUrl}
                           width="100%"
                           height="100%"
-                          controls
+                          controls={true}
                         />
                       </div>
                     </div>
@@ -355,7 +357,7 @@ export default function SubmissionsPage() {
                             url={selectedSubmission.analyticsVideoUrl}
                             width="100%"
                             height="100%"
-                            controls
+                            controls={true}
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full text-white/60">

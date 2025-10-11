@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Play, Eye, Calendar } from 'lucide-react';
-import ReactPlayer from 'react-player';
+import dynamic from 'next/dynamic';
+
+const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
 
 // Mock data - in real app, this would be fetched from API
 const mockApprovedSubmissions = [
@@ -82,7 +84,7 @@ const challenges = [
 
 export default function GalleryPage() {
   const [submissions] = useState(mockApprovedSubmissions);
-  const [selectedSubmission, setSelectedSubmission] = useState<typeof mockApprovedSubmissions[0] | null>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<(typeof mockApprovedSubmissions)[0] | null>(null);
   const [selectedChallenge, setSelectedChallenge] = useState('all');
 
   const filteredSubmissions = selectedChallenge === 'all' 
@@ -214,7 +216,7 @@ export default function GalleryPage() {
                       url={selectedSubmission.videoUrl}
                       width="100%"
                       height="100%"
-                      controls
+                      controls={true}
                     />
                   </div>
                   
