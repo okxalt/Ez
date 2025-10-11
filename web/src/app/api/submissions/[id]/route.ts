@@ -1,28 +1,81 @@
-import { prisma } from '@/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
-type RouteContext = { params: Promise<{ id: string }> };
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const submission = await prisma.submission.findUnique({
+      where: {
+        id: params.id,
+      },
+      include: {
+        challenge: true,
+      },
+    });
 
-export async function GET(_req: NextRequest, context: RouteContext) {
-  const { id: idParam } = await context.params;
-  const id = Number(idParam);
-  const item = await prisma.submission.findUnique({ where: { id } });
-  if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json(item);
+    if (!submission) {
+      return NextResponse.json(
+        { error: 'Submission not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(submission);
+  } catch (error) {
+    console.error('Error fetching submission:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch submission' },
+      { status: 500 }
+    );
+  }
 }
 
-export async function PATCH(req: NextRequest, context: RouteContext) {
-  const { id: idParam } = await context.params;
-  const id = Number(idParam);
-  const body = await req.json();
-  const { reviewed, currentViews } = body as { reviewed?: boolean; currentViews?: number };
-  const updated = await prisma.submission.update({
-    where: { id },
-    data: {
-      reviewed: reviewed ?? undefined,
-      reviewedAt: typeof reviewed === 'boolean' ? (reviewed ? new Date() : null) : undefined,
-      currentViews: typeof currentViews === 'number' ? currentViews : undefined,
-    },
-  });
-  return NextResponse.json(updated);
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const body = await request.json();
+    const { status, analyticsVideoUrl } = body;
+
+    // Validate status if provided
+    const validStatuses = ['SUBMITTED', 'AWAITING_ANALYTICS', 'PENDING_REVIEW', 'APPROVED', 'REJECTED'];
+    if (status && !validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: 'Invalid status' },
+        { status: 400 }
+      );
+    }
+
+    const updateData: any = {};
+    if (status) {
+      updateData.status = status;
+    }
+    if (analyticsVideoUrl) {
+      updateData.analyticsVideoUrl = analyticsVideoUrl;
+    }
+    if (status === 'APPROVED') {
+      updateData.approvedAt = new Date();
+    }
+
+    const submission = await prisma.submission.update({
+      where: {
+        id: params.id,
+      },
+      data: updateData,
+      include: {
+        challenge: true,
+      },
+    });
+
+    return NextResponse.json(submission);
+  } catch (error) {
+    console.error('Error updating submission:', error);
+    return NextResponse.json(
+      { error: 'Failed to update submission' },
+      { status: 500 }
+    );
+  }
 }
