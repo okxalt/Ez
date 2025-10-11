@@ -29,8 +29,11 @@ export default function RootLayout({
         <div className="min-h-screen">
           <header className="sticky top-0 z-10 backdrop-blur-xl bg-black/20 border-b border-white/10">
             <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
-              <h1 className="font-semibold tracking-tight text-orange-300">Whop Analytics</h1>
-              <nav className="text-sm text-white/70">Submit • Submissions • Admin</nav>
+              <div className="flex items-center gap-3">
+                <div className="size-8 rounded-xl bg-orange-500/30 ring-1 ring-orange-400/40" />
+                <h1 className="font-semibold tracking-tight text-orange-300">Whop Analytics</h1>
+              </div>
+              <nav className="text-sm text-white/70">Trial Mode</nav>
             </div>
           </header>
           <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>

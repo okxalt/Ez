@@ -9,7 +9,7 @@ import type { Submission, Admin } from '@prisma/client';
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function AdminPage() {
-  const [whopSlug, setWhopSlug] = useState('default');
+  const [whopSlug, setWhopSlug] = useState(process.env.NEXT_PUBLIC_TRIAL_WHOP || 'trial');
   const { data: submissions, mutate } = useSWR<Submission[]>(`/api/submissions?whop=${encodeURIComponent(whopSlug)}`, fetcher);
   const { data: admins, mutate: mutateAdmins } = useSWR<Admin[]>(`/api/admins?whop=${encodeURIComponent(whopSlug)}`, fetcher);
   const [email, setEmail] = useState('');
@@ -51,7 +51,7 @@ export default function AdminPage() {
           </div>
           <div>
             <label className="block text-sm text-white/70">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 outline-none" />
+            <input value={email} placeholder="admin@trial.local" onChange={(e) => setEmail(e.target.value)} className="px-3 py-2 rounded-lg bg-white/5 border border-white/10 outline-none" />
           </div>
           <div>
             <label className="block text-sm text-white/70">Admin secret</label>
