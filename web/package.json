@@ -15,9 +15,11 @@
   },
   "dependencies": {
     "@prisma/client": "^6.17.1",
+    "@supabase/supabase-js": "^2.75.0",
     "@vercel/blob": "^0.24.1",
     "iron-session": "^8.0.4",
     "next": "15.5.4",
+    "next-auth": "^4.24.11",
     "prisma": "^6.17.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
