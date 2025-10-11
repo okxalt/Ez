@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -68,12 +68,12 @@ export default function MySubmissionsPage() {
   const [uploadingFile, setUploadingFile] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleHitGoal = async (submissionId: string) => {
+  const handleHitGoal = async () => {
     try {
       // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success('Status updated! You can now upload your analytics proof.');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update status');
     }
   };
@@ -91,7 +91,7 @@ export default function MySubmissionsPage() {
       await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success('Analytics video uploaded successfully! Your submission is now pending review.');
       setSelectedFile(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to upload file');
     } finally {
       setUploadingFile(null);
@@ -155,7 +155,7 @@ export default function MySubmissionsPage() {
                         <div className="flex items-center gap-2 mt-4">
                           {submission.status === 'SUBMITTED' && (
                             <Button
-                              onClick={() => handleHitGoal(submission.id)}
+                              onClick={handleHitGoal}
                               className="bg-green-600 hover:bg-green-700"
                             >
                               I Hit The Goal! ({submission.minimumViewCount.toLocaleString()} views)
@@ -174,7 +174,7 @@ export default function MySubmissionsPage() {
                                 <DialogHeader>
                                   <DialogTitle className="text-white">Upload Analytics Video</DialogTitle>
                                   <DialogDescription className="text-white/70">
-                                    Upload a screen recording of your analytics showing you've reached{' '}
+                                    Upload a screen recording of your analytics showing you&apos;ve reached{' '}
                                     {submission.minimumViewCount.toLocaleString()} views.
                                   </DialogDescription>
                                 </DialogHeader>

@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const sellerId = searchParams.get('sellerId');
     const isActive = searchParams.get('isActive');
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (sellerId) {
       where.sellerId = sellerId;
     }

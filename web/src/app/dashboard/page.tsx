@@ -140,15 +140,15 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/70">New submission for "10k Views Club"</span>
+                    <span className="text-white/70">New submission for &quot;10k Views Club&quot;</span>
                     <Badge className="bg-orange-500 text-white">Pending</Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/70">Approved submission for "Viral TikTok"</span>
+                    <span className="text-white/70">Approved submission for &quot;Viral TikTok&quot;</span>
                     <Badge className="bg-green-500 text-white">Approved</Badge>
                   </div>
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-white/70">New submission for "YouTube Shorts"</span>
+                    <span className="text-white/70">New submission for &quot;YouTube Shorts&quot;</span>
                     <Badge className="bg-orange-500 text-white">Pending</Badge>
                   </div>
                 </div>

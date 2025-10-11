@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Play, Eye, Calendar } from 'lucide-react';
 import ReactPlayer from 'react-player';
+
+interface PageProps {
+  params: Promise<{ challengeId: string }>;
+}
 
 // Mock data - in real app, this would be fetched from API
 const mockApprovedSubmissions = [
@@ -31,63 +34,18 @@ const mockApprovedSubmissions = [
     approvedAt: '2024-01-10T14:20:00Z',
     viewCount: 75000,
   },
-  {
-    id: '3',
-    memberUsername: 'youtuber_pro',
-    videoTitle: 'Quick Tutorial',
-    videoUrl: 'https://www.youtube.com/shorts/example',
-    thumbnailUrl: 'https://via.placeholder.com/300x400/EF4444/FFFFFF?text=YouTube+Tutorial',
-    challengeTitle: 'YouTube Shorts Success',
-    approvedAt: '2024-01-09T16:45:00Z',
-    viewCount: 35000,
-  },
-  {
-    id: '4',
-    memberUsername: 'success_story',
-    videoTitle: 'My Viral Moment',
-    videoUrl: 'https://www.instagram.com/reel/example2',
-    thumbnailUrl: 'https://via.placeholder.com/300x400/10B981/FFFFFF?text=Viral+Moment',
-    challengeTitle: '10k Views Club',
-    approvedAt: '2024-01-08T09:15:00Z',
-    viewCount: 18000,
-  },
-  {
-    id: '5',
-    memberUsername: 'content_king',
-    videoTitle: 'Epic Transformation',
-    videoUrl: 'https://www.tiktok.com/@user/video/789012',
-    thumbnailUrl: 'https://via.placeholder.com/300x400/F59E0B/FFFFFF?text=Transformation',
-    challengeTitle: 'Viral TikTok',
-    approvedAt: '2024-01-07T12:30:00Z',
-    viewCount: 95000,
-  },
-  {
-    id: '6',
-    memberUsername: 'shorts_master',
-    videoTitle: 'Life Hack Revealed',
-    videoUrl: 'https://www.youtube.com/shorts/example2',
-    thumbnailUrl: 'https://via.placeholder.com/300x400/6366F1/FFFFFF?text=Life+Hack',
-    challengeTitle: 'YouTube Shorts Success',
-    approvedAt: '2024-01-06T15:20:00Z',
-    viewCount: 42000,
-  },
 ];
 
-const challenges = [
-  { id: 'all', name: 'All Challenges' },
-  { id: '10k-views', name: '10k Views Club' },
-  { id: 'viral-tiktok', name: 'Viral TikTok' },
-  { id: 'youtube-shorts', name: 'YouTube Shorts Success' },
-];
-
-export default function GalleryPage() {
+export default function ChallengeGalleryPage({ params }: PageProps) {
+  const [challengeId, setChallengeId] = useState<string>('');
   const [submissions] = useState(mockApprovedSubmissions);
   const [selectedSubmission, setSelectedSubmission] = useState<typeof mockApprovedSubmissions[0] | null>(null);
-  const [selectedChallenge, setSelectedChallenge] = useState('all');
 
-  const filteredSubmissions = selectedChallenge === 'all' 
-    ? submissions 
-    : submissions.filter(sub => sub.challengeTitle === challenges.find(c => c.id === selectedChallenge)?.name);
+  useEffect(() => {
+    params.then((resolvedParams) => {
+      setChallengeId(resolvedParams.challengeId);
+    });
+  }, [params]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -111,30 +69,18 @@ export default function GalleryPage() {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <h1 className="text-5xl font-bold text-white mb-4">Verified Wins Gallery</h1>
+            <h1 className="text-5xl font-bold text-white mb-4">Challenge Gallery</h1>
             <p className="text-xl text-white/70 mb-8">
-              Browse approved submissions and see verified wins from our community
+              Browse approved submissions for this challenge
             </p>
-            
-            <div className="flex justify-center">
-              <Select value={selectedChallenge} onValueChange={setSelectedChallenge}>
-                <SelectTrigger className="w-64 bg-white/10 border-white/20 text-white">
-                  <SelectValue placeholder="Filter by challenge" />
-                </SelectTrigger>
-                <SelectContent>
-                  {challenges.map((challenge) => (
-                    <SelectItem key={challenge.id} value={challenge.id}>
-                      {challenge.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Badge className="bg-blue-500 text-white text-lg px-4 py-2">
+              Challenge ID: {challengeId}
+            </Badge>
           </div>
 
           {/* Masonry Grid */}
           <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6 space-y-6">
-            {filteredSubmissions.map((submission) => (
+            {submissions.map((submission) => (
               <Card 
                 key={submission.id} 
                 className="break-inside-avoid bg-white/10 backdrop-blur border-white/20 hover:bg-white/15 transition-colors cursor-pointer"
@@ -188,10 +134,10 @@ export default function GalleryPage() {
             ))}
           </div>
 
-          {filteredSubmissions.length === 0 && (
+          {submissions.length === 0 && (
             <div className="text-center py-16">
-              <p className="text-white/70 text-lg mb-4">No submissions found</p>
-              <p className="text-white/50">Try selecting a different challenge filter</p>
+              <p className="text-white/70 text-lg mb-4">No submissions found for this challenge</p>
+              <p className="text-white/50">Check back later for approved submissions</p>
             </div>
           )}
 

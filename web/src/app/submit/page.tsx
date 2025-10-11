@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 
@@ -127,7 +126,7 @@ export default function SubmitPage() {
 
           <div className="mt-8 text-center">
             <p className="text-white/60 text-sm">
-              After submitting, you'll be able to upload your analytics proof once you hit the view goal.
+              After submitting, you&apos;ll be able to upload your analytics proof once you hit the view goal.
             </p>
           </div>
         </div>

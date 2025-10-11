@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const challengeId = searchParams.get('challengeId');
 
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (status) {
       where.status = status;
     }

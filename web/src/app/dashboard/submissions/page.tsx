@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -80,31 +80,31 @@ const statusConfig = {
 
 export default function SubmissionsPage() {
   const [submissions] = useState(mockSubmissions);
-  const [selectedSubmission, setSelectedSubmission] = useState<any>(null);
+  const [selectedSubmission, setSelectedSubmission] = useState<typeof mockSubmissions[0] | null>(null);
   const [isReviewing, setIsReviewing] = useState(false);
 
-  const handleApprove = async (submissionId: string) => {
+  const handleApprove = async () => {
     setIsReviewing(true);
     try {
       // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success('Submission approved!');
       setSelectedSubmission(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to approve submission');
     } finally {
       setIsReviewing(false);
     }
   };
 
-  const handleReject = async (submissionId: string) => {
+  const handleReject = async () => {
     setIsReviewing(true);
     try {
       // Mock API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       toast.success('Submission rejected');
       setSelectedSubmission(null);
-    } catch (error) {
+    } catch {
       toast.error('Failed to reject submission');
     } finally {
       setIsReviewing(false);
@@ -395,7 +395,7 @@ export default function SubmissionsPage() {
                   {selectedSubmission.status === 'PENDING_REVIEW' && (
                     <div className="flex gap-4">
                       <Button
-                        onClick={() => handleApprove(selectedSubmission.id)}
+                        onClick={handleApprove}
                         disabled={isReviewing}
                         className="flex-1 bg-green-600 hover:bg-green-700"
                       >
@@ -403,7 +403,7 @@ export default function SubmissionsPage() {
                         Approve
                       </Button>
                       <Button
-                        onClick={() => handleReject(selectedSubmission.id)}
+                        onClick={handleReject}
                         disabled={isReviewing}
                         variant="destructive"
                         className="flex-1"

@@ -51,7 +51,7 @@ export default function SetupPage() {
         description: '',
         minimumViewCount: '',
       });
-    } catch (error) {
+    } catch {
       toast.error('Failed to create challenge');
     } finally {
       setIsSubmitting(false);
