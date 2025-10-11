@@ -1,73 +1,136 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
-import { FrostedButton } from '@/components/FrostedButton';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 export default function SubmitPage() {
-  const [username, setUsername] = useState('');
-  const [shortVideoUrl, setShortVideoUrl] = useState('');
-  const [currentViews, setCurrentViews] = useState(0);
-  const [file, setFile] = useState<File | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [selectedChallenge, setSelectedChallenge] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(e: React.FormEvent) {
+  // Mock challenges - in real app, this would be fetched from API
+  const challenges = [
+    { id: '1', title: '10k Views Club', description: 'Get 10,000 views on your Reel', minimumViewCount: 10000 },
+    { id: '2', title: 'Viral TikTok', description: 'Create a viral TikTok with 50k+ views', minimumViewCount: 50000 },
+    { id: '3', title: 'YouTube Shorts Success', description: 'Hit 25k views on a YouTube Short', minimumViewCount: 25000 },
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
-    setMessage(null);
+    
+    if (!videoUrl || !selectedChallenge) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    setIsSubmitting(true);
 
     try {
-      if (!file) throw new Error('Upload analytics video');
-      // 1) upload file
-      const fd = new FormData();
-      fd.append('file', file);
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: fd });
-      if (!uploadRes.ok) throw new Error('Upload failed');
-      const { url } = await uploadRes.json();
+      // Validate URL format
+      const url = new URL(videoUrl);
+      if (!['www.instagram.com', 'www.tiktok.com', 'www.youtube.com'].some(domain => url.hostname.includes(domain))) {
+        throw new Error('Please provide a valid Instagram Reel, TikTok, or YouTube Short URL');
+      }
 
-      // 2) create submission
-      const createRes = await fetch('/api/submissions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, shortVideoUrl, analyticsVideoPath: url, currentViews }),
-      });
-      if (!createRes.ok) throw new Error('Create failed');
-      setMessage('Submitted successfully');
-      setUsername('');
-      setShortVideoUrl('');
-      setCurrentViews(0);
-      setFile(null);
-    } catch (err: unknown) {
-      if (err instanceof Error) setMessage(err.message);
-      else setMessage('Something went wrong');
+      // Mock API call - in real app, this would call your API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success('Video submitted successfully! Come back to update it once you hit the view goal.');
+      
+      // Reset form
+      setVideoUrl('');
+      setSelectedChallenge('');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to submit video');
     } finally {
-      setSaving(false);
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">New Submission</h2>
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
-        <div>
-          <label className="block text-sm text-white/70">Username</label>
-          <input value={username} onChange={(e) => setUsername(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-orange-500" required />
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl font-bold text-white mb-4">Submit Your Video</h1>
+            <p className="text-lg text-white/70">
+              Share your video and prove your success with analytics
+            </p>
+          </div>
+
+          <Card className="bg-white/10 backdrop-blur border-white/20">
+            <CardHeader>
+              <CardTitle className="text-white">Video Submission</CardTitle>
+              <CardDescription className="text-white/70">
+                Submit your Instagram Reel, TikTok, or YouTube Short URL
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="challenge" className="text-white">
+                    Select Challenge
+                  </Label>
+                  <Select value={selectedChallenge} onValueChange={setSelectedChallenge}>
+                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
+                      <SelectValue placeholder="Choose a challenge" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {challenges.map((challenge) => (
+                        <SelectItem key={challenge.id} value={challenge.id}>
+                          <div>
+                            <div className="font-medium">{challenge.title}</div>
+                            <div className="text-sm text-gray-500">
+                              {challenge.description} ({challenge.minimumViewCount.toLocaleString()} views)
+                            </div>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="videoUrl" className="text-white">
+                    Video URL
+                  </Label>
+                  <Input
+                    id="videoUrl"
+                    type="url"
+                    placeholder="https://www.instagram.com/reel/..."
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                    required
+                  />
+                  <p className="text-sm text-white/60">
+                    Supported platforms: Instagram Reels, TikTok, YouTube Shorts
+                  </p>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Video'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <div className="mt-8 text-center">
+            <p className="text-white/60 text-sm">
+              After submitting, you&apos;ll be able to upload your analytics proof once you hit the view goal.
+            </p>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm text-white/70">Short video URL (Reel/TikTok/YouTube Short)</label>
-          <input type="url" value={shortVideoUrl} onChange={(e) => setShortVideoUrl(e.target.value)} className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-orange-500" required />
-        </div>
-        <div>
-          <label className="block text-sm text-white/70">Current views</label>
-          <input type="number" value={currentViews} onChange={(e) => setCurrentViews(Number(e.target.value))} className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/10 outline-none focus:ring-2 focus:ring-orange-500" />
-        </div>
-        <div>
-          <label className="block text-sm text-white/70">Upload analytics video (mp4)</label>
-          <input type="file" accept="video/*" onChange={(e) => setFile(e.target.files?.[0] ?? null)} className="w-full mt-1" required />
-        </div>
-        <FrostedButton type="submit" disabled={saving}>{saving ? 'Submitting...' : 'Submit'}</FrostedButton>
-        {message && <p className="text-sm text-white/70">{message}</p>}
-      </form>
+      </div>
     </div>
   );
 }

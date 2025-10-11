@@ -1,8 +1,11 @@
 {
   "functions": {
-    "src/app/api/**/route.ts": {
-      "memory": 1024,
+    "src/app/api/upload/route.ts": {
       "maxDuration": 30
     }
+  },
+  "env": {
+    "DATABASE_URL": "postgres://56337e4cff1a4c4b9dd36e9184b4afd4a378ad4ad48b0928bfa6d0758ae9f820:sk_sbG7XqM3u8MvSrHN_C_qk@db.prisma.io:5432/postgres?sslmode=require",
+    "POSTGRES_URL": "postgres://56337e4cff1a4c4b9dd36e9184b4afd4a378ad4ad48b0928bfa6d0758ae9f820:sk_sbG7XqM3u8MvSrHN_C_qk@db.prisma.io:5432/postgres?sslmode=require"
   }
 }
