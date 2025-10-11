@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Play, Eye, Calendar } from 'lucide-react';
-import ReactPlayer from 'react-player';
+import VideoPlayer from '@/components/VideoPlayer';
 
 interface PageProps {
   params: Promise<{ challengeId: string }>;

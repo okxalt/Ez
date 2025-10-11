@@ -7,9 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Play, Eye, Calendar } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
+import VideoPlayer from '@/components/VideoPlayer';
 
 // Mock data - in real app, this would be fetched from API
 const mockApprovedSubmissions = [
@@ -212,7 +210,7 @@ export default function GalleryPage() {
               {selectedSubmission && (
                 <div className="space-y-4">
                   <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                    <ReactPlayer
+                    <VideoPlayer
                       url={selectedSubmission.videoUrl}
                       width="100%"
                       height="100%"

@@ -3,10 +3,10 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await context.params;
     const submission = await prisma.submission.findUnique({
       where: {
         id,
@@ -35,7 +35,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const body = await request.json();
@@ -50,7 +50,7 @@ export async function PATCH(
       );
     }
 
-    const { id } = await params;
+    const { id } = await context.params;
     const updateData: Record<string, unknown> = {};
     if (status) {
       updateData.status = status;

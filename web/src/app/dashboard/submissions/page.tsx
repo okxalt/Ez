@@ -8,9 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { Eye, CheckCircle, XCircle, Clock, Upload } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-const ReactPlayer = dynamic(() => import('react-player'), { ssr: false });
+import VideoPlayer from '@/components/VideoPlayer';
 
 // Mock data - in real app, this would be fetched from API
 const mockSubmissions = [
@@ -340,7 +338,7 @@ export default function SubmissionsPage() {
                     <div>
                       <h3 className="text-white font-semibold mb-3">Original Video</h3>
                       <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                        <ReactPlayer
+                        <VideoPlayer
                           url={selectedSubmission.videoUrl}
                           width="100%"
                           height="100%"
@@ -353,7 +351,7 @@ export default function SubmissionsPage() {
                       <h3 className="text-white font-semibold mb-3">Analytics Proof</h3>
                       <div className="aspect-video bg-black rounded-lg overflow-hidden">
                         {selectedSubmission.analyticsVideoUrl ? (
-                          <ReactPlayer
+                          <VideoPlayer
                             url={selectedSubmission.analyticsVideoUrl}
                             width="100%"
                             height="100%"

@@ -1,15 +1,26 @@
-"use client";
+'use client';
 
 import dynamic from 'next/dynamic';
-import React from 'react';
 
-type AnyProps = Record<string, unknown>;
-const ReactPlayerLazy = dynamic(() => import('react-player'), { ssr: false }) as unknown as React.FC<AnyProps>;
+const ReactPlayer = dynamic(() => import('react-player'), { 
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full bg-black text-white">Loading video...</div>
+});
 
-export function VideoPlayer({ url, controls = true }: { url: string; controls?: boolean }) {
+interface VideoPlayerProps {
+  url: string;
+  width?: string;
+  height?: string;
+  controls?: boolean;
+}
+
+export default function VideoPlayer({ url, width = "100%", height = "100%", controls = true }: VideoPlayerProps) {
   return (
-    <div className="relative w-full aspect-video overflow-hidden rounded-xl ring-1 ring-white/10 bg-white/5">
-      <ReactPlayerLazy url={url} width="100%" height="100%" controls={controls} />
-    </div>
+    <ReactPlayer
+      url={url}
+      width={width}
+      height={height}
+      controls={controls}
+    />
   );
 }
