@@ -1,11 +1,6 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-
-const ReactPlayer = dynamic(() => import('react-player'), { 
-  ssr: false,
-  loading: () => <div className="flex items-center justify-center h-full bg-black text-white">Loading video...</div>
-});
+import { useEffect, useState } from 'react';
 
 interface VideoPlayerProps {
   url: string;
@@ -15,6 +10,22 @@ interface VideoPlayerProps {
 }
 
 export default function VideoPlayer({ url, width = "100%", height = "100%", controls = true }: VideoPlayerProps) {
+  const [ReactPlayer, setReactPlayer] = useState<any>(null);
+
+  useEffect(() => {
+    import('react-player').then((mod) => {
+      setReactPlayer(() => mod.default);
+    });
+  }, []);
+
+  if (!ReactPlayer) {
+    return (
+      <div className="flex items-center justify-center h-full bg-black text-white">
+        Loading video...
+      </div>
+    );
+  }
+
   return (
     <ReactPlayer
       url={url}

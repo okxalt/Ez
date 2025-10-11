@@ -156,7 +156,7 @@ export default function ChallengeGalleryPage({ params }: PageProps) {
               {selectedSubmission && (
                 <div className="space-y-4">
                   <div className="aspect-video bg-black rounded-lg overflow-hidden">
-                    <ReactPlayer
+                    <VideoPlayer
                       url={selectedSubmission.videoUrl}
                       width="100%"
                       height="100%"
