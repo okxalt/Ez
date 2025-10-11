@@ -39,6 +39,7 @@ model Submission {
   originalVideoUrl      String
   videoMetadata         Json?
   analyticsVideoUrl     String?
+  submissionInstructions String?
   status                SubmissionStatus @default(SUBMITTED)
   submittedAt           DateTime    @default(now())
   approvedAt            DateTime?
