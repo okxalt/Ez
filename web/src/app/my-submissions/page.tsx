@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,94 +8,80 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Upload, Eye, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Upload, Eye, CheckCircle, Clock, XCircle, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-// Mock data - in real app, this would be fetched from API
-const mockSubmissions = [
-  {
-    id: '1',
-    challengeTitle: '10k Views Club',
-    videoUrl: 'https://www.instagram.com/reel/example1',
-    videoTitle: 'My Amazing Reel',
-    thumbnailUrl: 'https://via.placeholder.com/300x400',
-    status: 'SUBMITTED',
-    submittedAt: '2024-01-15T10:30:00Z',
-    minimumViewCount: 10000,
-  },
-  {
-    id: '2',
-    challengeTitle: 'Viral TikTok',
-    videoUrl: 'https://www.tiktok.com/@user/video/123456',
-    videoTitle: 'Viral Dance Challenge',
-    thumbnailUrl: 'https://via.placeholder.com/300x400',
-    status: 'AWAITING_ANALYTICS',
-    submittedAt: '2024-01-10T14:20:00Z',
-    minimumViewCount: 50000,
-  },
-  {
-    id: '3',
-    challengeTitle: 'YouTube Shorts Success',
-    videoUrl: 'https://www.youtube.com/shorts/example',
-    videoTitle: 'Quick Tutorial',
-    thumbnailUrl: 'https://via.placeholder.com/300x400',
-    status: 'PENDING_REVIEW',
-    submittedAt: '2024-01-05T09:15:00Z',
-    minimumViewCount: 25000,
-  },
-  {
-    id: '4',
-    challengeTitle: '10k Views Club',
-    videoUrl: 'https://www.instagram.com/reel/example2',
-    videoTitle: 'Another Great Reel',
-    thumbnailUrl: 'https://via.placeholder.com/300x400',
-    status: 'APPROVED',
-    submittedAt: '2024-01-01T16:45:00Z',
-    approvedAt: '2024-01-02T11:30:00Z',
-    minimumViewCount: 10000,
-  },
-];
-
-const statusConfig = {
-  SUBMITTED: { label: 'Submitted', color: 'bg-blue-500', icon: Clock },
-  AWAITING_ANALYTICS: { label: 'Awaiting Analytics', color: 'bg-yellow-500', icon: Upload },
-  PENDING_REVIEW: { label: 'Pending Review', color: 'bg-orange-500', icon: Eye },
-  APPROVED: { label: 'Approved', color: 'bg-green-500', icon: CheckCircle },
-  REJECTED: { label: 'Rejected', color: 'bg-red-500', icon: XCircle },
-};
+interface Submission {
+  id: string;
+  challengeId: string;
+  challengeTitle: string;
+  videoTitle: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+  status: 'SUBMITTED' | 'AWAITING_ANALYTICS' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
+  submittedAt: string;
+  approvedAt?: string;
+  viewCount?: number;
+  targetViews: number;
+  analyticsVideoUrl?: string;
+  submissionInstructions?: string;
+}
 
 export default function MySubmissionsPage() {
-  const [submissions] = useState(mockSubmissions);
-  const [uploadingFile, setUploadingFile] = useState<string | null>(null);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadingSubmissionId, setUploadingSubmissionId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleHitGoal = async () => {
+  useEffect(() => {
+    fetchSubmissions();
+  }, []);
+
+  const fetchSubmissions = async () => {
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast.success('Status updated! You can now upload your analytics proof.');
-    } catch {
-      toast.error('Failed to update status');
+      const response = await fetch('/api/submissions?memberWhopUserId=member_123');
+      const data = await response.json();
+      setSubmissions(data);
+    } catch (error) {
+      console.error('Error fetching submissions:', error);
+      toast.error('Failed to load submissions');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleFileUpload = async (submissionId: string) => {
-    if (!selectedFile) {
-      toast.error('Please select a file');
-      return;
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'SUBMITTED':
+        return <Clock className="h-4 w-4" />;
+      case 'AWAITING_ANALYTICS':
+        return <Upload className="h-4 w-4" />;
+      case 'PENDING_REVIEW':
+        return <Eye className="h-4 w-4" />;
+      case 'APPROVED':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'REJECTED':
+        return <XCircle className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
     }
+  };
 
-    setUploadingFile(submissionId);
-    
-    try {
-      // Mock file upload
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('Analytics video uploaded successfully! Your submission is now pending review.');
-      setSelectedFile(null);
-    } catch {
-      toast.error('Failed to upload file');
-    } finally {
-      setUploadingFile(null);
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'SUBMITTED':
+        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
+      case 'AWAITING_ANALYTICS':
+        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'PENDING_REVIEW':
+        return 'bg-orange-500/20 text-orange-300 border-orange-500/30';
+      case 'APPROVED':
+        return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'REJECTED':
+        return 'bg-red-500/20 text-red-300 border-red-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
     }
   };
 
@@ -109,28 +95,152 @@ export default function MySubmissionsPage() {
     });
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('video/')) {
+        toast.error('Please select a video file');
+        return;
+      }
+      
+      // Validate file size (max 100MB)
+      const maxSize = 100 * 1024 * 1024; // 100MB
+      if (file.size > maxSize) {
+        toast.error('File size must be less than 100MB');
+        return;
+      }
+      
+      setSelectedFile(file);
+    }
+  };
+
+  const handleUploadAnalytics = async (submissionId: string) => {
+    if (!selectedFile) {
+      toast.error('Please select a video file first');
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadingSubmissionId(submissionId);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('submissionId', submissionId);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload analytics video');
+      }
+
+      const { url } = await response.json();
+
+      // Update submission status to PENDING_REVIEW
+      const updateResponse = await fetch(`/api/submissions/${submissionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'PENDING_REVIEW',
+          analyticsVideoUrl: url,
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update submission status');
+      }
+
+      toast.success('Analytics video uploaded successfully! Your submission is now pending review.');
+      
+      // Refresh submissions
+      await fetchSubmissions();
+      
+      // Reset file selection
+      setSelectedFile(null);
+    } catch (error) {
+      console.error('Error uploading analytics video:', error);
+      toast.error('Failed to upload analytics video');
+    } finally {
+      setIsUploading(false);
+      setUploadingSubmissionId(null);
+    }
+  };
+
+  const handleHitGoal = async (submissionId: string) => {
+    try {
+      const response = await fetch(`/api/submissions/${submissionId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'AWAITING_ANALYTICS',
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update submission status');
+      }
+
+      toast.success('Great! Now upload your analytics video to prove you hit the goal.');
+      await fetchSubmissions();
+    } catch (error) {
+      console.error('Error updating submission:', error);
+      toast.error('Failed to update submission');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="flex items-center space-x-2 text-white">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading submissions...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 animate-fade-in">
             <h1 className="text-4xl font-bold text-white mb-4">My Submissions</h1>
-            <p className="text-lg text-white/70">
+            <p className="text-xl text-white/80">
               Track your video submissions and upload analytics proof
             </p>
           </div>
 
-          <div className="grid gap-6">
-            {submissions.map((submission) => {
-              const statusInfo = statusConfig[submission.status as keyof typeof statusConfig];
-              const StatusIcon = statusInfo.icon;
-
-              return (
-                <Card key={submission.id} className="bg-white/10 backdrop-blur border-white/20">
+          {submissions.length === 0 ? (
+            <Card className="bg-white/10 backdrop-blur border-white/20 animate-slide-up">
+              <CardContent className="p-8 text-center">
+                <p className="text-white/70 text-lg">No submissions yet</p>
+                <p className="text-white/50 mt-2">
+                  <a href="/submit" className="text-purple-300 hover:text-purple-200 underline">
+                    Submit your first video
+                  </a>
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid gap-6">
+              {submissions.map((submission, index) => (
+                <Card 
+                  key={submission.id} 
+                  className="bg-white/10 backdrop-blur border-white/20 animate-slide-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <Image
-                        src={submission.thumbnailUrl}
+                        src={submission.thumbnailUrl || 'https://via.placeholder.com/300x400'}
                         alt={submission.videoTitle}
                         width={96}
                         height={128}
@@ -145,102 +255,119 @@ export default function MySubmissionsPage() {
                             <p className="text-white/70 text-sm mb-2">
                               {submission.challengeTitle}
                             </p>
-                            <p className="text-white/60 text-xs">
-                              Submitted on {formatDate(submission.submittedAt)}
-                            </p>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge className={getStatusColor(submission.status)}>
+                                {getStatusIcon(submission.status)}
+                                <span className="ml-1 capitalize">
+                                  {submission.status.replace('_', ' ').toLowerCase()}
+                                </span>
+                              </Badge>
+                              <span className="text-white/50 text-sm">
+                                Submitted {formatDate(submission.submittedAt)}
+                              </span>
+                            </div>
                           </div>
-                          <Badge className={`${statusInfo.color} text-white`}>
-                            <StatusIcon className="w-3 h-3 mr-1" />
-                            {statusInfo.label}
-                          </Badge>
                         </div>
 
-                        <div className="flex items-center gap-2 mt-4">
+                        <div className="flex items-center gap-4 mt-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                            onClick={() => window.open(submission.videoUrl, '_blank')}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Video
+                          </Button>
+
                           {submission.status === 'SUBMITTED' && (
                             <Button
-                              onClick={handleHitGoal}
-                              className="bg-green-600 hover:bg-green-700"
+                              onClick={() => handleHitGoal(submission.id)}
+                              className="bg-green-600 hover:bg-green-700 text-white"
                             >
-                              I Hit The Goal! ({submission.minimumViewCount.toLocaleString()} views)
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              I Hit The Goal!
                             </Button>
                           )}
 
                           {submission.status === 'AWAITING_ANALYTICS' && (
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button className="bg-purple-600 hover:bg-purple-700">
-                                  <Upload className="w-4 h-4 mr-2" />
+                                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                                  <Upload className="h-4 w-4 mr-2" />
                                   Upload Analytics
                                 </Button>
                               </DialogTrigger>
-                              <DialogContent className="bg-gray-900 border-white/20">
+                              <DialogContent className="bg-gray-900 border-gray-700">
                                 <DialogHeader>
                                   <DialogTitle className="text-white">Upload Analytics Video</DialogTitle>
-                                  <DialogDescription className="text-white/70">
-                                    Upload a screen recording of your analytics showing you&apos;ve reached{' '}
-                                    {submission.minimumViewCount.toLocaleString()} views.
+                                  <DialogDescription className="text-gray-300">
+                                    Upload a screen recording of your analytics showing you hit the view goal.
                                   </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4">
-                                  <div className="space-y-2">
+                                  <div>
                                     <Label htmlFor="analytics-file" className="text-white">
-                                      Analytics Video
+                                      Select Video File
                                     </Label>
                                     <Input
                                       id="analytics-file"
                                       type="file"
                                       accept="video/*"
-                                      onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
-                                      className="bg-white/10 border-white/20 text-white"
+                                      onChange={handleFileSelect}
+                                      className="bg-gray-800 border-gray-600 text-white"
                                     />
+                                    <p className="text-sm text-gray-400 mt-1">
+                                      Max file size: 100MB. Supported formats: MP4, MOV, AVI
+                                    </p>
                                   </div>
-                                  <Button
-                                    onClick={() => handleFileUpload(submission.id)}
-                                    disabled={!selectedFile || uploadingFile === submission.id}
-                                    className="w-full bg-purple-600 hover:bg-purple-700"
-                                  >
-                                    {uploadingFile === submission.id ? 'Uploading...' : 'Upload'}
-                                  </Button>
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      onClick={() => handleUploadAnalytics(submission.id)}
+                                      disabled={!selectedFile || isUploading}
+                                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                                    >
+                                      {isUploading && uploadingSubmissionId === submission.id ? (
+                                        <>
+                                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                          Uploading...
+                                        </>
+                                      ) : (
+                                        'Upload'
+                                      )}
+                                    </Button>
+                                  </div>
                                 </div>
                               </DialogContent>
                             </Dialog>
                           )}
 
-                          {submission.status === 'PENDING_REVIEW' && (
-                            <div className="text-white/70 text-sm">
-                              Your analytics video is being reviewed by our team.
-                            </div>
-                          )}
-
-                          {submission.status === 'APPROVED' && (
-                            <div className="text-green-400 text-sm">
-                              ✅ Approved on {formatDate(submission.approvedAt!)}
-                            </div>
-                          )}
-
-                          {submission.status === 'REJECTED' && (
-                            <div className="text-red-400 text-sm">
-                              ❌ Rejected - Please check your analytics video and try again.
-                            </div>
+                          {submission.analyticsVideoUrl && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="bg-white/10 border-white/20 text-white hover:bg-white/20"
+                              onClick={() => window.open(submission.analyticsVideoUrl, '_blank')}
+                            >
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Analytics
+                            </Button>
                           )}
                         </div>
+
+                        {submission.submissionInstructions && (
+                          <div className="mt-4 p-3 bg-white/5 rounded-lg">
+                            <p className="text-sm text-white/70">
+                              <strong>Instructions:</strong> {submission.submissionInstructions}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              );
-            })}
-          </div>
-
-          {submissions.length === 0 && (
-            <Card className="bg-white/10 backdrop-blur border-white/20">
-              <CardContent className="p-8 text-center">
-                <p className="text-white/70 mb-4">No submissions yet</p>
-                <Button asChild className="bg-purple-600 hover:bg-purple-700">
-                  <a href="/submit">Submit Your First Video</a>
-                </Button>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
           )}
         </div>
       </div>

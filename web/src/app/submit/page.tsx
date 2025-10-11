@@ -1,24 +1,47 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+
+interface Challenge {
+  id: string;
+  title: string;
+  description: string | null;
+  minimumViewCount: number;
+  isActive: boolean;
+}
 
 export default function SubmitPage() {
   const [videoUrl, setVideoUrl] = useState('');
   const [selectedChallenge, setSelectedChallenge] = useState('');
+  const [submissionInstructions, setSubmissionInstructions] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
 
-  // Mock challenges - in real app, this would be fetched from API
-  const challenges = [
-    { id: '1', title: '10k Views Club', description: 'Get 10,000 views on your Reel', minimumViewCount: 10000 },
-    { id: '2', title: 'Viral TikTok', description: 'Create a viral TikTok with 50k+ views', minimumViewCount: 50000 },
-    { id: '3', title: 'YouTube Shorts Success', description: 'Hit 25k views on a YouTube Short', minimumViewCount: 25000 },
-  ];
+  useEffect(() => {
+    fetchChallenges();
+  }, []);
+
+  const fetchChallenges = async () => {
+    try {
+      const response = await fetch('/api/challenges?isActive=true');
+      const data = await response.json();
+      setChallenges(data);
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+      toast.error('Failed to load challenges');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,14 +60,31 @@ export default function SubmitPage() {
         throw new Error('Please provide a valid Instagram Reel, TikTok, or YouTube Short URL');
       }
 
-      // Mock API call - in real app, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Create submission via API
+      const response = await fetch('/api/submissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          challengeId: selectedChallenge,
+          memberWhopUserId: 'member_123', // In real app, get from auth
+          memberWhopUsername: 'testuser', // In real app, get from auth
+          originalVideoUrl: videoUrl,
+          submissionInstructions,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create submission');
+      }
       
       toast.success('Video submitted successfully! Come back to update it once you hit the view goal.');
       
       // Reset form
       setVideoUrl('');
       setSelectedChallenge('');
+      setSubmissionInstructions('');
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to submit video');
     } finally {
@@ -52,18 +92,29 @@ export default function SubmitPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 flex items-center justify-center">
+        <div className="flex items-center space-x-2 text-white">
+          <Loader2 className="h-6 w-6 animate-spin" />
+          <span>Loading challenges...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
+          <div className="text-center mb-8 animate-fade-in">
             <h1 className="text-4xl font-bold text-white mb-4">Submit Your Video</h1>
             <p className="text-lg text-white/70">
               Share your video and prove your success with analytics
             </p>
           </div>
 
-          <Card className="bg-white/10 backdrop-blur border-white/20">
+          <Card className="bg-white/10 backdrop-blur border-white/20 animate-slide-up">
             <CardHeader>
               <CardTitle className="text-white">Video Submission</CardTitle>
               <CardDescription className="text-white/70">
@@ -113,18 +164,39 @@ export default function SubmitPage() {
                   </p>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="instructions" className="text-white">
+                    Submission Instructions (Optional)
+                  </Label>
+                  <Textarea
+                    id="instructions"
+                    placeholder="Any additional notes or instructions for your submission..."
+                    value={submissionInstructions}
+                    onChange={(e) => setSubmissionInstructions(e.target.value)}
+                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                    rows={3}
+                  />
+                </div>
+
                 <Button 
                   type="submit" 
-                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white transition-all duration-300 hover:scale-105"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Submitting...' : 'Submit Video'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Submitting...
+                    </>
+                  ) : (
+                    'Submit Video'
+                  )}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 text-center animate-fade-in">
             <p className="text-white/60 text-sm">
               After submitting, you&apos;ll be able to upload your analytics proof once you hit the view goal.
             </p>
