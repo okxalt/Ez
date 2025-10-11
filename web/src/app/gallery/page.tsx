@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Play, Eye, Calendar } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
+import Image from 'next/image';
 
 // Mock data - in real app, this would be fetched from API
 const mockApprovedSubmissions = [
@@ -142,9 +143,11 @@ export default function GalleryPage() {
               >
                 <CardContent className="p-0">
                   <div className="relative group">
-                    <img
+                    <Image
                       src={submission.thumbnailUrl}
                       alt={submission.videoTitle}
+                      width={300}
+                      height={400}
                       className="w-full h-auto rounded-t-lg"
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">

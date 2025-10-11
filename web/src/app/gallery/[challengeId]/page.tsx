@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Play, Eye, Calendar } from 'lucide-react';
 import VideoPlayer from '@/components/VideoPlayer';
+import Image from 'next/image';
 
 interface PageProps {
   params: Promise<{ challengeId: string }>;
@@ -88,9 +89,11 @@ export default function ChallengeGalleryPage({ params }: PageProps) {
               >
                 <CardContent className="p-0">
                   <div className="relative group">
-                    <img
+                    <Image
                       src={submission.thumbnailUrl}
                       alt={submission.videoTitle}
+                      width={300}
+                      height={400}
                       className="w-full h-auto rounded-t-lg"
                     />
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-t-lg flex items-center justify-center">

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Upload, Eye, CheckCircle, Clock, XCircle } from 'lucide-react';
+import Image from 'next/image';
 
 // Mock data - in real app, this would be fetched from API
 const mockSubmissions = [
@@ -128,9 +129,11 @@ export default function MySubmissionsPage() {
                 <Card key={submission.id} className="bg-white/10 backdrop-blur border-white/20">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <img
+                      <Image
                         src={submission.thumbnailUrl}
                         alt={submission.videoTitle}
+                        width={96}
+                        height={128}
                         className="w-24 h-32 object-cover rounded-lg"
                       />
                       <div className="flex-1">
