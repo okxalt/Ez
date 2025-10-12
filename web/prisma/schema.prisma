@@ -44,6 +44,10 @@ model Submission {
   submittedAt           DateTime    @default(now())
   approvedAt            DateTime?
   challenge             Challenge   @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([challengeId])
+  @@index([memberWhopUserId])
+  @@index([status])
 }
 
 enum SubmissionStatus {
