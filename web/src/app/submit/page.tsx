@@ -54,6 +54,13 @@ export default function SubmitPage() {
     setIsSubmitting(true);
 
     try {
+      // Ensure user is logged in
+      const meRes = await fetch('/api/auth/me');
+      const me = await meRes.json();
+      if (!me.user) {
+        toast.error('Please sign up or log in first');
+        return;
+      }
       // Validate URL format
       const url = new URL(videoUrl);
       if (!['www.instagram.com', 'www.tiktok.com', 'www.youtube.com'].some(domain => url.hostname.includes(domain))) {
@@ -68,8 +75,8 @@ export default function SubmitPage() {
         },
         body: JSON.stringify({
           challengeId: selectedChallenge,
-          memberWhopUserId: 'member_123', // In real app, get from auth
-          memberWhopUsername: 'testuser', // In real app, get from auth
+          memberWhopUserId: me.user.id,
+          memberWhopUsername: me.user.username,
           originalVideoUrl: videoUrl,
           submissionInstructions,
         }),

@@ -2,7 +2,7 @@ import { getIronSession, type SessionOptions } from 'iron-session';
 import { cookies } from 'next/headers';
 
 export type SessionData = {
-  user?: { email: string };
+  user?: { id: string; email: string; username: string };
 };
 
 const sessionPassword = process.env.SESSION_PASSWORD || 'dev-change-me-please-32chars-minimum________';
