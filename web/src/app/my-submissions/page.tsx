@@ -244,8 +244,8 @@ export default function MySubmissionsPage() {
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <Image
-                        src={submission.thumbnailUrl || 'https://via.placeholder.com/300x400'}
-                        alt={submission.videoTitle}
+                        src={submission.videoMetadata?.thumbnailUrl || 'https://via.placeholder.com/300x400'}
+                        alt={submission.videoMetadata?.title || 'Video'}
                         width={96}
                         height={128}
                         className="w-24 h-32 object-cover rounded-lg"
