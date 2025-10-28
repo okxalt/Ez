@@ -1,50 +1,50 @@
+"use client";
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Settings, Eye, BarChart3, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-// Mock data - in real app, this would be fetched from API
-const mockStats = {
-  totalChallenges: 3,
-  activeChallenges: 2,
-  totalSubmissions: 47,
-  pendingReviews: 8,
-  approvedSubmissions: 35,
-  rejectedSubmissions: 4,
+type Challenge = {
+  id: string;
+  title: string;
+  description: string | null;
+  minimumViewCount: number;
+  isActive: boolean;
+  _count?: { submissions: number };
 };
 
-const mockChallenges = [
-  {
-    id: '1',
-    title: '10k Views Club',
-    description: 'Get 10,000 views on your Reel',
-    minimumViewCount: 10000,
-    isActive: true,
-    submissionCount: 23,
-    approvedCount: 18,
-  },
-  {
-    id: '2',
-    title: 'Viral TikTok',
-    description: 'Create a viral TikTok with 50k+ views',
-    minimumViewCount: 50000,
-    isActive: true,
-    submissionCount: 15,
-    approvedCount: 12,
-  },
-  {
-    id: '3',
-    title: 'YouTube Shorts Success',
-    description: 'Hit 25k views on a YouTube Short',
-    minimumViewCount: 25000,
-    isActive: false,
-    submissionCount: 9,
-    approvedCount: 5,
-  },
-];
+type Submission = { status: string };
 
 export default function DashboardPage() {
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [chRes, subRes] = await Promise.all([
+          fetch('/api/challenges'),
+          fetch('/api/submissions'),
+        ]);
+        const [chData, subData] = await Promise.all([chRes.json(), subRes.json()]);
+        setChallenges(chData);
+        setSubmissions(subData);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, []);
+
+  const totalChallenges = challenges.length;
+  const activeChallenges = challenges.filter(c => c.isActive).length;
+  const totalSubmissions = submissions.length;
+  const pendingReviews = submissions.filter(s => s.status === 'PENDING_REVIEW').length;
+  const approvedSubmissions = submissions.filter(s => s.status === 'APPROVED').length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
       <div className="container mx-auto px-4 py-16">
@@ -63,7 +63,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-sm">Total Challenges</p>
-                    <p className="text-2xl font-bold text-white">{mockStats.totalChallenges}</p>
+                    <p className="text-2xl font-bold text-white">{totalChallenges}</p>
                   </div>
                   <Settings className="h-8 w-8 text-white/50" />
                 </div>
@@ -75,7 +75,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-sm">Total Submissions</p>
-                    <p className="text-2xl font-bold text-white">{mockStats.totalSubmissions}</p>
+                    <p className="text-2xl font-bold text-white">{totalSubmissions}</p>
                   </div>
                   <BarChart3 className="h-8 w-8 text-white/50" />
                 </div>
@@ -87,7 +87,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-sm">Pending Reviews</p>
-                    <p className="text-2xl font-bold text-white">{mockStats.pendingReviews}</p>
+                    <p className="text-2xl font-bold text-white">{pendingReviews}</p>
                   </div>
                   <Eye className="h-8 w-8 text-white/50" />
                 </div>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white/70 text-sm">Approved</p>
-                    <p className="text-2xl font-bold text-white">{mockStats.approvedSubmissions}</p>
+                    <p className="text-2xl font-bold text-white">{approvedSubmissions}</p>
                   </div>
                   <Users className="h-8 w-8 text-white/50" />
                 </div>
@@ -166,7 +166,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {mockChallenges.map((challenge) => (
+                {challenges.map((challenge) => (
                   <div
                     key={challenge.id}
                     className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10"
@@ -180,7 +180,7 @@ export default function DashboardPage() {
                       </div>
                       <p className="text-white/70 text-sm mb-2">{challenge.description}</p>
                       <p className="text-white/60 text-xs">
-                        {challenge.submissionCount} submissions • {challenge.approvedCount} approved
+                        {(challenge._count?.submissions ?? 0)} submissions
                       </p>
                     </div>
                     <div className="flex items-center gap-2">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,13 +11,7 @@ import { toast } from 'sonner';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-// Mock Whop products - in real app, this would be fetched from Whop API
-const mockWhopProducts = [
-  { id: 'prod_1', name: 'Premium Content Access', description: 'Access to exclusive content' },
-  { id: 'prod_2', name: 'VIP Community', description: 'Join our VIP Discord server' },
-  { id: 'prod_3', name: '1-on-1 Coaching', description: 'Personal coaching sessions' },
-  { id: 'prod_4', name: 'Masterclass Bundle', description: 'Complete course collection' },
-];
+type WhopProduct = { id: string; name: string; description?: string };
 
 export default function SetupPage() {
   const [formData, setFormData] = useState({
@@ -27,6 +21,12 @@ export default function SetupPage() {
     minimumViewCount: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [products, setProducts] = useState<WhopProduct[]>([]);
+
+  useEffect(() => {
+    // In a real app, fetch from Whop API. For now, leave empty or static minimal list
+    setProducts([]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,18 +39,20 @@ export default function SetupPage() {
     setIsSubmitting(true);
 
     try {
-      // Mock API call - in real app, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success('Challenge created successfully!');
-      
-      // Reset form
-      setFormData({
-        whopProductId: '',
-        title: '',
-        description: '',
-        minimumViewCount: '',
+      const res = await fetch('/api/challenges', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sellerId: 'seller_demo',
+          whopProductId: formData.whopProductId || 'prod_demo',
+          title: formData.title,
+          description: formData.description,
+          minimumViewCount: formData.minimumViewCount,
+        }),
       });
+      if (!res.ok) throw new Error('Failed');
+      toast.success('Challenge created successfully!');
+      setFormData({ whopProductId: '', title: '', description: '', minimumViewCount: '' });
     } catch {
       toast.error('Failed to create challenge');
     } finally {
@@ -101,7 +103,7 @@ export default function SetupPage() {
                       <SelectValue placeholder="Select a Whop product" />
                     </SelectTrigger>
                     <SelectContent>
-                      {mockWhopProducts.map((product) => (
+                      {products.map((product) => (
                         <SelectItem key={product.id} value={product.id}>
                           <div>
                             <div className="font-medium">{product.name}</div>

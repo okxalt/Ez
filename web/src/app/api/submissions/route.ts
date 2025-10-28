@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getSession } from '@/lib/session';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
     const challengeId = searchParams.get('challengeId');
+    const mine = searchParams.get('mine');
+    const memberWhopUserId = searchParams.get('memberWhopUserId');
 
     const where: Record<string, unknown> = {};
     if (status) {
@@ -13,6 +16,17 @@ export async function GET(request: NextRequest) {
     }
     if (challengeId) {
       where.challengeId = challengeId;
+    }
+    if (memberWhopUserId) {
+      where.memberWhopUserId = memberWhopUserId;
+    }
+    if (mine === 'true') {
+      const session = await getSession();
+      if (!session.user) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+      // Use username as member identifier for now
+      where.memberWhopUserId = session.user.id;
     }
 
     const submissions = await prisma.submission.findMany({

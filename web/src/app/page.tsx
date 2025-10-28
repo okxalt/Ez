@@ -27,14 +27,14 @@ export default function Home() {
                 Submit your video URL, hit the view goal, and upload your analytics proof.
               </p>
               <div className="flex flex-col gap-2">
-                <Link href="/submit">
+                <Link href="/signup">
                   <Button className="w-full bg-purple-600 hover:bg-purple-700">
-                    Submit Video
+                    Get Started (Sign up)
                   </Button>
                 </Link>
-                <Link href="/my-submissions">
+                <Link href="/submit">
                   <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10">
-                    My Submissions
+                    Submit Video
                   </Button>
                 </Link>
               </div>

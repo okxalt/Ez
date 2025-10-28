@@ -14,16 +14,13 @@ import Image from 'next/image';
 interface Submission {
   id: string;
   challengeId: string;
-  challengeTitle: string;
-  videoTitle: string;
-  videoUrl: string;
-  thumbnailUrl: string;
+  challenge: { id: string; title: string; minimumViewCount: number };
+  originalVideoUrl: string;
+  analyticsVideoUrl?: string;
+  videoMetadata?: { title?: string; thumbnailUrl?: string };
   status: 'SUBMITTED' | 'AWAITING_ANALYTICS' | 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED';
   submittedAt: string;
   approvedAt?: string;
-  viewCount?: number;
-  targetViews: number;
-  analyticsVideoUrl?: string;
   submissionInstructions?: string;
 }
 
@@ -40,7 +37,14 @@ export default function MySubmissionsPage() {
 
   const fetchSubmissions = async () => {
     try {
-      const response = await fetch('/api/submissions?memberWhopUserId=member_123');
+      const meRes = await fetch('/api/auth/me');
+      const me = await meRes.json();
+      if (!me.user) {
+        setSubmissions([]);
+        setIsLoading(false);
+        return;
+      }
+      const response = await fetch('/api/submissions?mine=true');
       const data = await response.json();
       setSubmissions(data);
     } catch (error) {
@@ -240,8 +244,8 @@ export default function MySubmissionsPage() {
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <Image
-                        src={submission.thumbnailUrl || 'https://via.placeholder.com/300x400'}
-                        alt={submission.videoTitle}
+                        src={submission.videoMetadata?.thumbnailUrl || 'https://via.placeholder.com/300x400'}
+                        alt={submission.videoMetadata?.title || 'Video'}
                         width={96}
                         height={128}
                         className="w-24 h-32 object-cover rounded-lg"
@@ -250,10 +254,10 @@ export default function MySubmissionsPage() {
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <h3 className="text-lg font-semibold text-white mb-1">
-                              {submission.videoTitle}
+                              {submission.videoMetadata?.title || 'Video Submission'}
                             </h3>
                             <p className="text-white/70 text-sm mb-2">
-                              {submission.challengeTitle}
+                              {submission.challenge?.title}
                             </p>
                             <div className="flex items-center gap-2 mb-2">
                               <Badge className={getStatusColor(submission.status)}>
@@ -274,7 +278,7 @@ export default function MySubmissionsPage() {
                             variant="outline"
                             size="sm"
                             className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                            onClick={() => window.open(submission.videoUrl, '_blank')}
+                            onClick={() => window.open(submission.originalVideoUrl, '_blank')}
                           >
                             <Eye className="h-4 w-4 mr-2" />
                             View Video

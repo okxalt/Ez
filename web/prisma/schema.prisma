@@ -44,6 +44,10 @@ model Submission {
   submittedAt           DateTime    @default(now())
   approvedAt            DateTime?
   challenge             Challenge   @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+  @@index([challengeId])
+  @@index([memberWhopUserId])
+  @@index([status])
 }
 
 enum SubmissionStatus {
@@ -52,4 +56,12 @@ enum SubmissionStatus {
   PENDING_REVIEW
   APPROVED
   REJECTED
+}
+
+model Member {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
 }
